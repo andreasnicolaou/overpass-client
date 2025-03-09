@@ -48,7 +48,7 @@ npm install @andreasnicolaou/overpass-client
 ### Importing the Library
 
 ```typescript
-import { OverpassClient } from '@andreasnicolaou/overpass-api-wrapper';
+import { OverpassClient } from '@andreasnicolaou/overpass-client';
 ```
 
 ### Initialize the Library
