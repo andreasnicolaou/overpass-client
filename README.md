@@ -8,16 +8,16 @@
 
 Interacting with the Overpass API directly can be complex due to common issues like network failures, timeouts, and data size concerns. This wrapper addresses those issues by:
 
-- **Automatic Retries**: The client automatically retries failed requests with exponential backoff.
+- **Automatic Retries**: The client automatically retries failed requests with exponential backoff and Jitter.
 - **Network Resilience**: It reduces downtime caused by intermittent network issues or server limitations.
-- **Error Handling**: It gracefully handles Overpass-specific errors, retries, and timeouts without additional configuration.
+- **Error Handling**: Gracefully handles Overpass-specific errors, retries, and timeouts, including a custom error class for different error scenarios.
 
 This is ideal for developers who want to interact with OSM data without worrying about low-level request handling and retries.
 
 ## Features
 
 - **Axios Integration**: Uses Axios for making HTTP requests, providing flexibility and familiarity.
-- **Automatic Retries with Exponential Backoff**: Built-in retry logic that progressively delays retries to avoid overwhelming the server.
+- **Automatic Retries with Exponential Backoff and Jitter**: Built-in retry logic that progressively delays retries with exponential backoff and jitter to avoid overwhelming the server.
 - **Observables**: Handles asynchronous operations efficiently, with easy composition and transformation of the data flow.
 - **Node, Way & Relation Support**: Supports querying `node`, `way` and `relation` data, enabling more accurate searches.
 - **Caching**: Caches responses to optimize performance for repeated queries, using LRU cache.
@@ -27,12 +27,12 @@ This is ideal for developers who want to interact with OSM data without worrying
 
 1. **Retries and Exponential Backoff**:
 
-   - If a request fails, the client automatically retries it with an exponentially increasing delay between attempts, ensuring the server isn't overwhelmed.
+   - If a request fails, the client automatically retries it with an exponentially increasing delay, including jitter between attempts, ensuring the server isn't overwhelmed.
    - This approach significantly improves reliability, especially when dealing with intermittent issues.
 
 2. **Handling Network and Server Failures**:
 
-   - The use of Observables and retry logic ensures that transient failures (such as network glitches or API downtime) don't lead to repeated failures, providing a smoother experience for users.
+   - The use of Observables, retry logic, and error handling ensures that transient failures (such as network glitches, rate limiting, or API downtime) don't lead to repeated failures, providing a smoother experience for users.
 
 3. **Simplified API**:
    - The library abstracts away complex HTTP request handling and error management, allowing developers to focus on higher-level application logic rather than worrying about the specifics of interacting with the Overpass API.

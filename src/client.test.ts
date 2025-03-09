@@ -9,11 +9,15 @@ describe('OverpassClient', () => {
 
   beforeEach(() => {
     axiosMockAdapter = new MockAdapter(axios);
-    overpassClient = new OverpassClient('http://test-overpass-api');
+    overpassClient = new OverpassClient('http://test-overpass-api', 'json', 60, 2);
+
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    jest.spyOn(console, 'warn').mockImplementation(() => {}); // Disable console warnings
   });
 
   afterEach(() => {
     axiosMockAdapter.reset();
+    jest.restoreAllMocks();
   });
 
   test('should successfully fetch a node', (done: jest.DoneCallback) => {
@@ -40,7 +44,7 @@ describe('OverpassClient', () => {
         next: () => done.fail(new Error('Expected an error, but got success')),
         error: (err) => {
           expect(err).toBeDefined();
-          expect(err.message).toContain('Unknown error');
+          expect(err.message).toContain('Max retries exceeded');
           done();
         },
       });
@@ -100,7 +104,7 @@ describe('OverpassClient', () => {
         next: () => done.fail(new Error('Expected an error, but got success')),
         error: (err) => {
           expect(err).toBeDefined();
-          expect(err.message).toContain('Overpass Query Error');
+          expect(err.message).toContain('Overpass Error');
           done();
         },
       });
