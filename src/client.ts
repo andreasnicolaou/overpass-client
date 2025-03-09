@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { Observable, defer, retry, delay, of, tap, throwError, timer } from 'rxjs';
 import { LRUCache } from 'lru-cache';
-import { OverpassBadRequestError, OverpassError, OverpassGatewayTimeoutError } from './errors';
+import { OverpassError } from './errors';
 
 const matchAll = (regex: RegExp, string: string): string[] => {
   let match: RegExpExecArray | null;
@@ -228,7 +228,9 @@ export class OverpassClient {
               return throwError(
                 () =>
                   new OverpassError(
-                    `[${error.status}] - Max retries exceeded. Request failed ${error.response?.statusText ?? ''}.`
+                    `Max retries exceeded. Request failed ${error.response?.statusText ?? ''}`,
+                    undefined,
+                    query
                   )
               );
             }
@@ -240,26 +242,30 @@ export class OverpassClient {
                   const errors = matchAll(/<\/strong>: ([^<]+) <\/p>/g, response.data).map((err) =>
                     err.replace(/&quot;/g, '"')
                   );
-                  return throwError(() => new OverpassBadRequestError(query, errors));
+                  return throwError(() => new OverpassError(`Bad Request Error`, errors, query));
                 }
-                case 429: {
-                  const retryAfter = Math.pow(2, attempt) * 1000;
+                case 429: // Too Many Requests (Rate Limit)
+                case 500: // Internal Server Error
+                case 502: // Bad Gateway
+                case 503: // Service Unavailable
+                case 504: {
+                  // Gateway Timeout
+                  const baseDelay = Math.pow(2, attempt) * 1000;
+                  const retryAfter = Math.random() * baseDelay; // Exponential backoff with jitter
                   console.warn(`Overpass API rate limit reached! Retrying in ${retryAfter / 1000} seconds...`);
                   return timer(retryAfter);
                 }
-                case 504:
-                  return throwError(() => new OverpassGatewayTimeoutError());
                 default:
                   return throwError(
                     () => new OverpassError(`${status}${response.statusText ?? 'Unknown error occured'}`)
                   );
               }
             } else {
-              return throwError(() => new OverpassError('Something went wrong'));
+              return throwError(() => new OverpassError('Something went wrong', undefined, query));
             }
           }
           // Non-retryable error: propagate immediately
-          throw new OverpassError('Unknown error occurred');
+          return throwError(() => new OverpassError('Unknown error occurred', undefined, query));
         },
       })
     );
