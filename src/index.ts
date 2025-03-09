@@ -7,4 +7,4 @@ export {
   OverpassResponse,
   OverpassWay,
 } from './client';
-export { OverpassBadRequestError, OverpassError, OverpassGatewayTimeoutError, OverpassRateLimitError } from './errors';
+export { OverpassError } from './errors';
