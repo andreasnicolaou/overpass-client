@@ -236,7 +236,6 @@ export class OverpassClient {
             }
             const response = error.response;
             if (response) {
-              const status = response.status ? `[${response.status}] - ` : '';
               switch (response.status) {
                 case 400: {
                   const errors = matchAll(/<\/strong>: ([^<]+) <\/p>/g, response.data).map((err) =>
@@ -244,21 +243,25 @@ export class OverpassClient {
                   );
                   return throwError(() => new OverpassError(`Bad Request Error`, errors, query));
                 }
-                case 429: // Too Many Requests (Rate Limit)
+                case 429: {
+                  // Too Many Requests (Rate Limit)
+                  const retryAfter = response.headers?.['retry-after']
+                    ? parseInt(response.headers['retry-after'], 10) * 1000
+                    : null;
+                  return this.retryAfter(attempt, retryAfter);
+                }
                 case 500: // Internal Server Error
                 case 502: // Bad Gateway
                 case 503: // Service Unavailable
                 case 504: {
-                  // Gateway Timeout
-                  const baseDelay = Math.pow(2, attempt) * 1000;
-                  const retryAfter = Math.random() * baseDelay; // Exponential backoff with jitter
-                  console.warn(`Overpass API rate limit reached! Retrying in ${retryAfter / 1000} seconds...`);
-                  return timer(retryAfter);
+                  return this.retryAfter(attempt);
                 }
-                default:
+                default: {
+                  const status = response.status ? `[${response.status}] - ` : '';
                   return throwError(
                     () => new OverpassError(`${status}${response.statusText ?? 'Unknown error occured'}`)
                   );
+                }
               }
             } else {
               return throwError(() => new OverpassError('Something went wrong', undefined, query));
@@ -269,5 +272,23 @@ export class OverpassClient {
         },
       })
     );
+  }
+
+  /**
+   * Calculates the retry delay using exponential backoff with jitter.
+   * If a `retryAfterMs` value is provided (for 429 errors), it is used directly.
+   * @param attempt
+   * @param [retryAfterMs]
+   * @returns after
+   */
+  private retryAfter(attempt: number, retryAfterMs: number | null = null): Observable<number> {
+    if (retryAfterMs !== null) {
+      console.warn(`Overpass API rate limit reached! Retrying in ${retryAfterMs / 1000} seconds...`);
+      return timer(retryAfterMs);
+    }
+    const baseDelay = Math.pow(2, attempt) * 1000;
+    const retryAfter = Math.random() * baseDelay; // Exponential backoff with jitter
+    console.warn(`Transient error encountered. Retrying in ${retryAfter / 1000} seconds...`);
+    return timer(retryAfter);
   }
 }
