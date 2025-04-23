@@ -1,10 +1,11 @@
 name: CI Workflow Build
 on:
   pull_request:
-    types:
-      - opened
-    branches:
-      - main
+    types: [opened, synchronize, reopened]
+    branches: [main]
+permissions:
+  contents: read
+  pull-requests: write
 jobs:
   Lint_And_Test:
     runs-on: ubuntu-latest
@@ -16,7 +17,7 @@ jobs:
         with:
           node-version: '22'
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Run lint
         run: npm run lint
       - name: Run tests
