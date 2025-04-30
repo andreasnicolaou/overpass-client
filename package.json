@@ -44,7 +44,7 @@
     "@types/axios": "^0.9.36",
     "@types/axios-mock-adapter": "^1.9.0",
     "@types/jest": "^29.5.14",
-    "@types/node": "^22.13.9",
+    "@types/node": "^22.15.3",
     "@typescript-eslint/eslint-plugin": "^8.31.1",
     "@typescript-eslint/parser": "^8.31.0",
     "axios-mock-adapter": "^2.1.0",
