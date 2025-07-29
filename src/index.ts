@@ -1,10 +1,10 @@
 export {
   OverpassClient,
-  ElementType,
-  OverpassElement,
-  OverpassNode,
-  OverpassRelation,
-  OverpassResponse,
-  OverpassWay,
+  type ElementType,
+  type OverpassElement,
+  type OverpassNode,
+  type OverpassRelation,
+  type OverpassResponse,
+  type OverpassWay,
 } from './client';
 export { OverpassError } from './errors';
