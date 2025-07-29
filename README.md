@@ -4,6 +4,21 @@
 
 `OverpassClient` is designed to simplify interaction with the Overpass API, used for querying OpenStreetMap (OSM) data. This wrapper provides an easy-to-use interface for retrieving geographic objects like nodes, ways, and relations while handling common issues such as retries, timeouts, and network failures.
 
+![TypeScript](https://img.shields.io/badge/TS-TypeScript-3178c6?logo=typescript&logoColor=white)
+![GitHub contributors](https://img.shields.io/github/contributors/andreasnicolaou/overpass-client)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/andreasnicolaou/overpass-client/build.yaml)
+[![npm version](https://badge.fury.io/js/@andreasnicolaou%2Foverpass-client.svg)](https://badge.fury.io/js/@andreasnicolaou%2Foverpass-client)
+
+![ESLint](https://img.shields.io/badge/linter-eslint-4B32C3.svg?logo=eslint)
+![Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?logo=prettier)
+![Jest](https://img.shields.io/badge/tested_with-jest-99424f.svg?logo=jest)
+![Maintenance](https://img.shields.io/maintenance/yes/2025)
+[![GitHub issues](https://img.shields.io/github/issues/andreasnicolaou/overpass-client.svg)](https://github.com/andreasnicolaou/overpass-client/issues)
+[![GitHub stars](https://img.shields.io/github/stars/andreasnicolaou/overpass-client.svg)](https://github.com/andreasnicolaou/overpass-client/stargazers)
+
+[![Downloads](https://img.shields.io/npm/dm/@andreasnicolaou/overpass-client.svg)](https://www.npmjs.com/package/@andreasnicolaou/overpass-client)
+
 ## Why?
 
 Interacting with the Overpass API directly can be complex due to common issues like network failures, timeouts, and data size concerns. This wrapper addresses those issues by:
@@ -26,12 +41,10 @@ This is ideal for developers who want to interact with OSM data without worrying
 ## How It Solves Common Problems
 
 1. **Retries and Exponential Backoff**:
-
    - If a request fails, the client automatically retries it with an exponentially increasing delay, including jitter between attempts, ensuring the server isn't overwhelmed.
    - This approach significantly improves reliability, especially when dealing with intermittent issues.
 
 2. **Handling Network and Server Failures**:
-
    - The use of Observables, retry logic, and error handling ensures that transient failures (such as network glitches, rate limiting, or API downtime) don't lead to repeated failures, providing a smoother experience for users.
 
 3. **Simplified API**:
