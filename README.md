@@ -15,6 +15,8 @@
 ![Jest](https://img.shields.io/badge/tested_with-jest-99424f.svg?logo=jest)
 ![Maintenance](https://img.shields.io/maintenance/yes/2025)
 [![GitHub issues](https://img.shields.io/github/issues/andreasnicolaou/overpass-client.svg)](https://github.com/andreasnicolaou/overpass-client/issues)
+[![codecov](https://codecov.io/gh/andreasnicolaou/overpass-client/graph/badge.svg?token=C5O14LK0OK)](https://codecov.io/gh/andreasnicolaou/overpass-client)
+
 [![GitHub stars](https://img.shields.io/github/stars/andreasnicolaou/overpass-client.svg)](https://github.com/andreasnicolaou/overpass-client/stargazers)
 
 [![Downloads](https://img.shields.io/npm/dm/@andreasnicolaou/overpass-client.svg)](https://www.npmjs.com/package/@andreasnicolaou/overpass-client)
