@@ -90,7 +90,7 @@
   ],
   "dependencies": {
     "@types/node": "^25.1.0",
-    "axios": "^1.13.2",
+    "axios": "^1.13.5",
     "lru-cache": "^11.2.4",
     "rxjs": "^7.8.2"
   }
