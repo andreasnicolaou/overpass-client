@@ -89,7 +89,7 @@
     "andreasnicolaou"
   ],
   "dependencies": {
-    "@types/node": "^25.0.3",
+    "@types/node": "^25.1.0",
     "axios": "^1.13.2",
     "lru-cache": "^11.2.4",
     "rxjs": "^7.8.2"
