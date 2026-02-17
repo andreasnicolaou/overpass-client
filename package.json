@@ -62,8 +62,8 @@
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.51.0",
-    "@typescript-eslint/parser": "^8.51.0",
+    "@typescript-eslint/eslint-plugin": "^8.56.0",
+    "@typescript-eslint/parser": "^8.56.0",
     "axios-mock-adapter": "^2.1.0",
     "bundlewatch": "^0.4.1",
     "cross-env": "^10.1.0",
@@ -89,9 +89,9 @@
     "andreasnicolaou"
   ],
   "dependencies": {
-    "@types/node": "^25.1.0",
+    "@types/node": "^25.2.3",
     "axios": "^1.13.5",
-    "lru-cache": "^11.2.4",
+    "lru-cache": "^11.2.6",
     "rxjs": "^7.8.2"
   }
 }
