@@ -13,7 +13,7 @@
 ![ESLint](https://img.shields.io/badge/linter-eslint-4B32C3.svg?logo=eslint)
 ![Prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?logo=prettier)
 ![Jest](https://img.shields.io/badge/tested_with-jest-99424f.svg?logo=jest)
-![Maintenance](https://img.shields.io/maintenance/yes/2025)
+![Maintenance](https://img.shields.io/maintenance/yes/2026)
 [![GitHub issues](https://img.shields.io/github/issues/andreasnicolaou/overpass-client.svg)](https://github.com/andreasnicolaou/overpass-client/issues)
 [![codecov](https://codecov.io/gh/andreasnicolaou/overpass-client/graph/badge.svg?token=C5O14LK0OK)](https://codecov.io/gh/andreasnicolaou/overpass-client)
 
