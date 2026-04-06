@@ -62,7 +62,7 @@
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.57.2",
+    "@typescript-eslint/eslint-plugin": "^8.58.0",
     "@typescript-eslint/parser": "^8.57.2",
     "axios-mock-adapter": "^2.1.0",
     "bundlewatch": "^0.4.1",
