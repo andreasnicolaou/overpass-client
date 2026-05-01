@@ -74,7 +74,7 @@
     "@eslint/eslintrc": "^3.3.5",
     "globals": "^17.5.0",
     "jest": "^30.3.0",
-    "jest-junit": "^16.0.0",
+    "jest-junit": "^17.0.0",
     "prettier": "3.8.1",
     "ts-jest": "^29.4.9",
     "ts-node": "^10.9.2",
