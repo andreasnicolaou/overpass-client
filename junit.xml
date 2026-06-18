@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="24" failures="0" errors="0" time="5.165">
+  <testsuite name="OverpassClient" errors="0" failures="0" skipped="0" timestamp="2026-06-18T05:37:10" time="5.03" tests="24">
+    <testcase classname="src\client.test.ts" name="OverpassClient should successfully fetch a node" time="0.004">
+    </testcase>
+    <testcase classname="src\client.test.ts" name="OverpassClient should handle API failure and retry" time="0.746">
+    </testcase>
+    <testcase classname="src\client.test.ts" name="OverpassClient should fetch cafe amenities by bounding box" time="0.001">
+    </testcase>
+    <testcase classname="src\client.test.ts" name="OverpassClient should fetch restaurant amenities by radius" time="0.001">
+    </testcase>
+    <testcase classname="src\client.test.ts" name="OverpassClient should successfully fetch a way" time="0.001">
+    </testcase>
+    <testcase classname="src\client.test.ts" name="OverpassClient should handle invalid query format (400)" time="0.001">
+    </testcase>
+    <testcase classname="src\client.test.ts" name="OverpassClient should not retry on success" time="0.001">
+    </testcase>
+    <testcase classname="src\client.test.ts" name="OverpassClient should retry on failure with exponential backoff" time="0.987">
+    </testcase>
+    <testcase classname="src\client.test.ts" name="OverpassClient should return cached data for repeated requests" time="0.203">
+    </testcase>
+    <testcase classname="src\client.test.ts" name="OverpassClient should clear cache" time="0.001">
+    </testcase>
+    <testcase classname="src\client.test.ts" name="OverpassClient should return cached data for repeated bounding box requests" time="0.216">
+    </testcase>
+    <testcase classname="src\client.test.ts" name="OverpassClient should return cached data for repeated radius requests" time="0.203">
+    </testcase>
+    <testcase classname="src\client.test.ts" name="OverpassClient should handle 503 Service Unavailable errors with retry" time="1.279">
+    </testcase>
+    <testcase classname="src\client.test.ts" name="OverpassClient should handle 504 Gateway Timeout errors with retry" time="0.17">
+    </testcase>
+    <testcase classname="src\client.test.ts" name="OverpassClient should handle unknown HTTP status codes" time="0.001">
+    </testcase>
+    <testcase classname="src\client.test.ts" name="OverpassClient should handle network errors without response" time="0.012">
+    </testcase>
+    <testcase classname="src\client.test.ts" name="OverpassClient should handle 400 errors with detailed error parsing" time="0.001">
+    </testcase>
+    <testcase classname="src\client.test.ts" name="OverpassClient should handle 429 Rate Limit with retry-after header" time="1.014">
+    </testcase>
+    <testcase classname="src\client.test.ts" name="OverpassClient should handle relation element type" time="0">
+    </testcase>
+    <testcase classname="src\client.test.ts" name="OverpassClient should handle multiple element types in bounding box query" time="0">
+    </testcase>
+    <testcase classname="src\client.test.ts" name="OverpassClient should handle multiple element types in radius query" time="0">
+    </testcase>
+    <testcase classname="src\client.test.ts" name="OverpassClient should handle custom output format" time="0.001">
+    </testcase>
+    <testcase classname="src\client.test.ts" name="OverpassClient should handle bounding box query with custom output format" time="0.001">
+    </testcase>
+    <testcase classname="src\client.test.ts" name="OverpassClient should handle radius query with custom output format" time="0.001">
+    </testcase>
+  </testsuite>
+</testsuites>
