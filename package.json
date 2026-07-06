@@ -65,17 +65,17 @@
     "@eslint/js": "^10.0.1",
     "@types/jest": "^30.0.0",
     "@typescript-eslint/eslint-plugin": "^8.61.1",
-    "@typescript-eslint/parser": "^8.59.4",
+    "@typescript-eslint/parser": "^8.63.0",
     "axios-mock-adapter": "^2.1.0",
     "bundlewatch": "^0.4.2",
     "cross-env": "^10.1.0",
-    "eslint": "^10.5.0",
+    "eslint": "^10.6.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
     "globals": "^17.6.0",
     "jest": "^30.4.2",
     "jest-junit": "^17.0.0",
-    "prettier": "3.8.4",
+    "prettier": "3.9.4",
     "ts-jest": "^29.4.11",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3"
@@ -91,7 +91,7 @@
     "andreasnicolaou"
   ],
   "dependencies": {
-    "@types/node": "^25.9.3",
+    "@types/node": "^26.0.1",
     "axios": "^1.18.0",
     "lru-cache": "^11.5.1",
     "rxjs": "^7.8.2"
