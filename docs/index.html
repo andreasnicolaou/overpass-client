@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OverpassClient — live demo</title>
+    <meta
+      name="description"
+      content="Live browser demo of @andreasnicolaou/overpass-client, a wrapper for the Overpass API to query OpenStreetMap data."
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%233a7d44'/%3E%3Cpath d='M16 6.4c-4 0-7.2 3.2-7.2 7.2 0 5.4 7.2 12 7.2 12s7.2-6.6 7.2-12c0-4-3.2-7.2-7.2-7.2z' fill='%23ffffff'/%3E%3Ccircle cx='16' cy='13.4' r='2.7' fill='%233a7d44'/%3E%3C/svg%3E"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin="anonymous"
+    />
+
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>OverpassClient</h1>
+        <p class="lede">
+          A wrapper for the Overpass API to query OpenStreetMap data — with retries, exponential backoff, and LRU
+          caching. This page runs the real library in your browser, loaded straight from a CDN with no bundler.
+        </p>
+        <p class="links">
+          <a href="https://github.com/andreasnicolaou/overpass-client">GitHub</a>
+          <a href="https://www.npmjs.com/package/@andreasnicolaou/overpass-client">npm</a>
+          <a href="https://wiki.openstreetmap.org/wiki/Overpass_API">Overpass API</a>
+        </p>
+      </header>
+
+      <section class="card">
+        <h2>Loaded on this page</h2>
+        <pre><code>&lt;script src="https://unpkg.com/@andreasnicolaou/overpass-client"&gt;&lt;/script&gt;
+&lt;script&gt;
+  const client = new OverpassClient.OverpassClient();
+&lt;/script&gt;</code></pre>
+        <p class="note">
+          The UMD build is self-contained — Axios, RxJS and lru-cache are bundled in, so this is the only script tag the
+          library needs.
+        </p>
+      </section>
+
+      <div class="grid">
+        <section class="card" aria-label="Query controls">
+          <h2>Query</h2>
+
+          <fieldset>
+            <legend>Method</legend>
+            <div class="seg" id="method">
+              <button type="button" data-method="radius" aria-pressed="true">By radius</button>
+              <button type="button" data-method="bbox" aria-pressed="false">By bbox</button>
+              <button type="button" data-method="id" aria-pressed="false">By ID</button>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <label class="label" for="preset">Preset</label>
+            <select id="preset">
+              <option value="paris-cafes">Cafés &amp; restaurants — Paris</option>
+              <option value="rome-museums">Museums — Rome</option>
+              <option value="dublin-pubs">Pubs — Dublin</option>
+              <option value="berlin-bikes">Bicycle parking — Berlin</option>
+            </select>
+          </fieldset>
+
+          <div data-for="radius bbox">
+            <fieldset>
+              <span class="label">Tag filter</span>
+              <div class="row">
+                <div class="field">
+                  <label for="tagKey">Key</label>
+                  <input id="tagKey" type="text" value="amenity" />
+                </div>
+                <div class="field">
+                  <label for="tagValues">Values</label>
+                  <input id="tagValues" type="text" value="cafe,restaurant" />
+                </div>
+              </div>
+              <p class="note">Comma-separate multiple values.</p>
+            </fieldset>
+          </div>
+
+          <div data-for="radius">
+            <fieldset>
+              <span class="label">Centre &amp; radius</span>
+              <div class="row">
+                <div class="field">
+                  <label for="lat">Latitude</label>
+                  <input id="lat" type="number" step="any" value="48.8566" />
+                </div>
+                <div class="field">
+                  <label for="lon">Longitude</label>
+                  <input id="lon" type="number" step="any" value="2.3522" />
+                </div>
+              </div>
+              <div class="row" style="margin-top: 8px">
+                <div class="field">
+                  <label for="radius">Radius (metres)</label>
+                  <input id="radius" type="number" min="1" value="800" />
+                </div>
+              </div>
+            </fieldset>
+          </div>
+
+          <div data-for="bbox" hidden>
+            <fieldset>
+              <span class="label">Bounding box</span>
+              <div class="row">
+                <div class="field">
+                  <label for="minLat">Min latitude</label>
+                  <input id="minLat" type="number" step="any" value="48.85" />
+                </div>
+                <div class="field">
+                  <label for="minLon">Min longitude</label>
+                  <input id="minLon" type="number" step="any" value="2.29" />
+                </div>
+              </div>
+              <div class="row" style="margin-top: 8px">
+                <div class="field">
+                  <label for="maxLat">Max latitude</label>
+                  <input id="maxLat" type="number" step="any" value="48.87" />
+                </div>
+                <div class="field">
+                  <label for="maxLon">Max longitude</label>
+                  <input id="maxLon" type="number" step="any" value="2.35" />
+                </div>
+              </div>
+            </fieldset>
+          </div>
+
+          <div data-for="id" hidden>
+            <fieldset>
+              <span class="label">Element</span>
+              <div class="row">
+                <div class="field">
+                  <label for="elType">Type</label>
+                  <select id="elType">
+                    <option value="node">node</option>
+                    <option value="way" selected>way</option>
+                    <option value="relation">relation</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="elId">ID</label>
+                  <input id="elId" type="number" value="452" />
+                </div>
+              </div>
+            </fieldset>
+          </div>
+
+          <div data-for="radius bbox">
+            <fieldset>
+              <span class="label">Element types</span>
+              <div class="checks">
+                <label><input type="checkbox" class="elCheck" value="node" checked /> node</label>
+                <label><input type="checkbox" class="elCheck" value="way" checked /> way</label>
+                <label><input type="checkbox" class="elCheck" value="relation" checked /> relation</label>
+              </div>
+            </fieldset>
+          </div>
+
+          <div class="actions">
+            <button type="button" class="primary" id="run">Run query</button>
+            <button type="button" class="ghost" id="clear">Clear cache</button>
+          </div>
+          <p class="note">
+            Queries run only when you press the button — the public Overpass instances are volunteer-run. Please read
+            the
+            <a href="https://operations.osmfoundation.org/policies/api/">API usage policy</a>.
+          </p>
+        </section>
+
+        <section class="card" aria-label="Results">
+          <h2>Result</h2>
+          <div id="map"></div>
+
+          <div class="stats">
+            <div class="stat"><span class="k">Elements</span><span class="v" id="statCount">—</span></div>
+            <div class="stat"><span class="k">Plotted</span><span class="v" id="statPlotted">—</span></div>
+            <div class="stat"><span class="k">Time</span><span class="v" id="statTime">—</span></div>
+            <div class="stat"><span class="k">Source</span><span class="v" id="statSource">—</span></div>
+          </div>
+
+          <div class="error" id="error" role="alert"></div>
+
+          <h2 style="margin-top: 18px">Call</h2>
+          <pre><code id="snippet"></code></pre>
+
+          <h2 style="margin-top: 18px">Response</h2>
+          <pre id="json"><code>Run a query to see the raw Overpass response.</code></pre>
+        </section>
+      </div>
+
+      <footer>
+        <p>
+          Map data ©
+          <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>. Tiles courtesy of
+          OpenStreetMap. Queried via the <a href="https://wiki.openstreetmap.org/wiki/Overpass_API">Overpass API</a>.
+        </p>
+        <p>
+          <a href="https://github.com/andreasnicolaou/overpass-client">@andreasnicolaou/overpass-client</a> — MIT
+          licensed.
+        </p>
+      </footer>
+    </div>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://unpkg.com/@andreasnicolaou/overpass-client"></script>
+
+    <script>
+      (function () {
+        'use strict';
+
+        const MARKER_LIMIT = 500;
+        // Mirrors the client's own LRUCache ttl, so the "cached" label matches what it will actually do.
+        const CACHE_TTL_MS = 5 * 60 * 1000;
+
+        const client = new OverpassClient.OverpassClient();
+        const seen = new Map();
+
+        const $ = (id) => document.getElementById(id);
+        const presets = {
+          'paris-cafes': { tagKey: 'amenity', tagValues: 'cafe,restaurant', lat: 48.8566, lon: 2.3522, radius: 800 },
+          'rome-museums': { tagKey: 'tourism', tagValues: 'museum', lat: 41.9028, lon: 12.4964, radius: 1500 },
+          'dublin-pubs': { tagKey: 'amenity', tagValues: 'pub', lat: 53.3498, lon: -6.2603, radius: 900 },
+          'berlin-bikes': { tagKey: 'amenity', tagValues: 'bicycle_parking', lat: 52.52, lon: 13.405, radius: 700 },
+        };
+
+        let method = 'radius';
+
+        const map = L.map('map').setView([48.8566, 2.3522], 14);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        }).addTo(map);
+        const layer = L.layerGroup().addTo(map);
+
+        /** Elements are nodes (lat/lon) or ways/relations (center), and center only exists with `out center;`. */
+        const coordsOf = (el) => {
+          if (typeof el.lat === 'number' && typeof el.lon === 'number') return [el.lat, el.lon];
+          if (el.center && typeof el.center.lat === 'number') return [el.center.lat, el.center.lon];
+          return null;
+        };
+
+        const tags = () => {
+          const key = $('tagKey').value.trim() || 'amenity';
+          const values = $('tagValues')
+            .value.split(',')
+            .map((v) => v.trim())
+            .filter(Boolean);
+          return { [key]: values.length ? values : ['cafe'] };
+        };
+
+        const elementTypes = () =>
+          Array.from(document.querySelectorAll('.elCheck'))
+            .filter((c) => c.checked)
+            .map((c) => c.value);
+
+        /** Builds the arguments once, so the snippet shown and the call made can never drift apart. */
+        function buildCall() {
+          if (method === 'id') {
+            return {
+              fn: 'getElement',
+              args: [$('elType').value, Number($('elId').value), 'out center;'],
+            };
+          }
+          if (method === 'bbox') {
+            const bbox = [
+              Number($('minLat').value),
+              Number($('minLon').value),
+              Number($('maxLat').value),
+              Number($('maxLon').value),
+            ];
+            return { fn: 'getElementsByBoundingBox', args: [tags(), bbox, elementTypes()] };
+          }
+          return {
+            fn: 'getElementsByRadius',
+            args: [tags(), Number($('lat').value), Number($('lon').value), Number($('radius').value), elementTypes()],
+          };
+        }
+
+        function renderSnippet(call) {
+          const args = call.args.map((a) => JSON.stringify(a)).join(', ');
+          $('snippet').textContent =
+            'client.' + call.fn + '(' + args + ')\n  .subscribe((response) => console.log(response));';
+        }
+
+        function plot(elements) {
+          layer.clearLayers();
+          const points = [];
+          for (const el of elements) {
+            const c = coordsOf(el);
+            if (!c) continue;
+            points.push(c);
+            if (points.length > MARKER_LIMIT) continue;
+            const name = (el.tags && (el.tags.name || el.tags.operator)) || el.type + ' ' + el.id;
+            L.circleMarker(c, {
+              radius: 6,
+              color: '#3a7d44',
+              weight: 2,
+              fillColor: '#3a7d44',
+              fillOpacity: 0.55,
+            })
+              .bindPopup(
+                '<strong>' +
+                  String(name).replace(/[<>&]/g, '') +
+                  '</strong><br><small>' +
+                  el.type +
+                  ' · ' +
+                  el.id +
+                  '</small>'
+              )
+              .addTo(layer);
+          }
+          if (points.length) map.fitBounds(L.latLngBounds(points), { padding: [30, 30], maxZoom: 16 });
+          return points.length;
+        }
+
+        function setBusy(busy) {
+          $('run').disabled = busy;
+          $('run').textContent = busy ? 'Querying…' : 'Run query';
+        }
+
+        function run() {
+          const call = buildCall();
+          renderSnippet(call);
+          $('error').textContent = '';
+          setBusy(true);
+
+          // The client doesn't report cache hits, so mirror its key + ttl to label the source honestly.
+          const key = call.fn + ':' + JSON.stringify(call.args);
+          const previous = seen.get(key);
+          const fromCache = Boolean(previous && Date.now() - previous < CACHE_TTL_MS);
+          const started = performance.now();
+
+          client[call.fn](...call.args).subscribe({
+            next: (response) => {
+              const ms = Math.round(performance.now() - started);
+              seen.set(key, Date.now());
+              const elements = (response && response.elements) || [];
+              const plotted = plot(elements);
+
+              $('statCount').textContent = String(elements.length);
+              $('statPlotted').textContent = plotted > MARKER_LIMIT ? MARKER_LIMIT + '+' : String(plotted);
+              $('statTime').textContent = ms + ' ms';
+              $('statSource').innerHTML = fromCache
+                ? '<span class="pill cache">cache</span>'
+                : '<span class="pill">network</span>';
+
+              $('json').textContent = JSON.stringify(response, null, 2);
+              if (elements.length && plotted === 0) {
+                $('error').textContent =
+                  'Returned ' + elements.length + ' element(s), but none carried coordinates to plot.';
+              }
+              setBusy(false);
+            },
+            error: (err) => {
+              layer.clearLayers();
+              $('statCount').textContent = '—';
+              $('statPlotted').textContent = '—';
+              $('statTime').textContent = '—';
+              $('statSource').textContent = '—';
+              $('error').textContent = (err && err.message) || String(err);
+              $('json').textContent = 'No response.';
+              setBusy(false);
+            },
+          });
+        }
+
+        function applyMethod(next) {
+          method = next;
+          document.querySelectorAll('#method button').forEach((b) => {
+            b.setAttribute('aria-pressed', String(b.dataset.method === next));
+          });
+          document.querySelectorAll('[data-for]').forEach((el) => {
+            el.hidden = !el.dataset.for.split(' ').includes(next);
+          });
+          renderSnippet(buildCall());
+        }
+
+        document.querySelectorAll('#method button').forEach((b) => {
+          b.addEventListener('click', () => applyMethod(b.dataset.method));
+        });
+
+        $('preset').addEventListener('change', (e) => {
+          const p = presets[e.target.value];
+          if (!p) return;
+          $('tagKey').value = p.tagKey;
+          $('tagValues').value = p.tagValues;
+          $('lat').value = p.lat;
+          $('lon').value = p.lon;
+          $('radius').value = p.radius;
+          map.setView([p.lat, p.lon], 14);
+          renderSnippet(buildCall());
+        });
+
+        document.querySelectorAll('input, select').forEach((el) => {
+          el.addEventListener('input', () => renderSnippet(buildCall()));
+        });
+
+        $('run').addEventListener('click', run);
+        $('clear').addEventListener('click', () => {
+          client.clearCache();
+          seen.clear();
+          $('statSource').textContent = '—';
+        });
+
+        renderSnippet(buildCall());
+      })();
+    </script>
+  </body>
+</html>
