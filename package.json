@@ -1,20 +1,37 @@
 {
   "name": "@andreasnicolaou/overpass-client",
-  "version": "1.4.2",
+  "version": "1.5.0",
   "description": "A wrapper for the Overpass API to query OpenStreetMap data.",
-  "main": "dist/index.js",
+  "main": "./dist/index.cjs",
   "private": false,
-  "types": "dist/types/index.d.ts",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "unpkg": "./dist/index.umd.min.js",
+  "jsdelivr": "./dist/index.umd.min.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "type": "module",
   "files": [
     "dist",
     "README.md"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "npm run clean && npm run build:types && npm run build:bundles && npm run clean:tmp",
+    "build:types": "tsc -p tsconfig.build.json",
+    "build:bundles": "rollup -c",
+    "clean": "node -e \"for (const d of ['dist','.types-tmp']) require('node:fs').rmSync(d,{recursive:true,force:true})\"",
+    "clean:tmp": "node -e \"require('node:fs').rmSync('.types-tmp',{recursive:true,force:true})\"",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint --fix",
+    "lint:check": "eslint",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "test:ci": "cross-env JEST_JUNIT_CLASSNAME=\"{filepath}\" jest --reporters=default --reporters=jest-junit",
@@ -45,17 +62,17 @@
     "files": [
       {
         "path": "dist/index.js",
-        "maxSize": "1kB",
+        "maxSize": "3.5kB",
         "compression": "gzip"
       },
       {
-        "path": "dist/client.js",
-        "maxSize": "3kB",
+        "path": "dist/index.cjs",
+        "maxSize": "3.5kB",
         "compression": "gzip"
       },
       {
-        "path": "dist/errors.js",
-        "maxSize": "300B",
+        "path": "dist/index.umd.min.js",
+        "maxSize": "33kB",
         "compression": "gzip"
       }
     ]
@@ -63,21 +80,28 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.6",
     "@eslint/js": "^10.0.1",
+    "@rollup/plugin-commonjs": "^29.0.3",
+    "@rollup/plugin-node-resolve": "^16.0.3",
+    "@rollup/plugin-terser": "^1.0.0",
+    "@rollup/plugin-typescript": "^12.3.0",
     "@types/jest": "^30.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.65.0",
-    "@typescript-eslint/parser": "^8.64.0",
+    "@typescript-eslint/eslint-plugin": "^8.66.0",
+    "@typescript-eslint/parser": "^8.66.0",
     "axios-mock-adapter": "^2.1.0",
     "bundlewatch": "^0.4.2",
     "cross-env": "^10.1.0",
-    "eslint": "^10.7.0",
+    "eslint": "^10.8.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
-    "globals": "^17.8.0",
+    "globals": "^17.9.0",
     "jest": "^30.4.2",
     "jest-junit": "^17.0.0",
     "prettier": "3.9.6",
+    "rollup": "^4.62.4",
+    "rollup-plugin-dts": "^6.5.1",
     "ts-jest": "^29.4.12",
     "ts-node": "^10.9.2",
+    "tslib": "^2.8.1",
     "typescript": "^6.0.3"
   },
   "keywords": [
@@ -91,8 +115,8 @@
     "andreasnicolaou"
   ],
   "dependencies": {
-    "@types/node": "^26.1.1",
-    "axios": "^1.18.1",
+    "@types/node": "^26.2.0",
+    "axios": "^1.19.0",
     "lru-cache": "^11.5.2",
     "rxjs": "^7.8.2"
   }

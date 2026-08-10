@@ -61,4 +61,11 @@ export default [
       ],
     },
   },
+  {
+    // Build/tooling configs are plain JS, so the TypeScript-only rules don't apply.
+    files: ['*.config.mjs', '*.config.js'],
+    rules: {
+      '@typescript-eslint/explicit-function-return-type': 'off',
+    },
+  },
 ];
