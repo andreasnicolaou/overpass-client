@@ -39,6 +39,7 @@ This is ideal for developers who want to interact with OSM data without worrying
 - **Node, Way & Relation Support**: Supports querying `node`, `way` and `relation` data, enabling more accurate searches.
 - **Caching**: Caches responses to optimize performance for repeated queries, using LRU cache.
 - **Flexible Querying**: Easily query elements by ID, bounding box, or radius with customizable tag filters.
+- **Ships ESM, CommonJS & UMD**: Works in bundlers, Node, and directly in the browser from a CDN, with TypeScript declarations included.
 
 ## How It Solves Common Problems
 
@@ -64,6 +65,24 @@ npm install @andreasnicolaou/overpass-client
 
 ```typescript
 import { OverpassClient } from '@andreasnicolaou/overpass-client';
+```
+
+CommonJS is supported too:
+
+```javascript
+const { OverpassClient } = require('@andreasnicolaou/overpass-client');
+```
+
+### Using it in the browser from a CDN
+
+The UMD build is self-contained — Axios, RxJS and lru-cache are bundled in, so no other script tags are required. It exposes an `OverpassClient` global namespace:
+
+```html
+<script src="https://unpkg.com/@andreasnicolaou/overpass-client"></script>
+<script>
+  const client = new OverpassClient.OverpassClient();
+  client.getElement('way', 452).subscribe((response) => console.log(response));
+</script>
 ```
 
 ### Initialize the Library
