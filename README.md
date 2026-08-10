@@ -4,6 +4,9 @@
 
 `OverpassClient` is designed to simplify interaction with the Overpass API, used for querying OpenStreetMap (OSM) data. This wrapper provides an easy-to-use interface for retrieving geographic objects like nodes, ways, and relations while handling common issues such as retries, timeouts, and network failures.
 
+**[Try the live demo →](https://andreasnicolaou.github.io/overpass-client/)** — query real OSM data from your browser and see the results on a map.
+
+[![Live demo](https://img.shields.io/badge/demo-live-3a7d44?logo=openstreetmap&logoColor=white)](https://andreasnicolaou.github.io/overpass-client/)
 ![TypeScript](https://img.shields.io/badge/TS-TypeScript-3178c6?logo=typescript&logoColor=white)
 ![GitHub contributors](https://img.shields.io/github/contributors/andreasnicolaou/overpass-client)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -84,6 +87,8 @@ The UMD build is self-contained — Axios, RxJS and lru-cache are bundled in, so
   client.getElement('way', 452).subscribe((response) => console.log(response));
 </script>
 ```
+
+This is exactly what the [live demo](https://andreasnicolaou.github.io/overpass-client/) runs — its source is a single file in [`docs/`](docs/index.html).
 
 ### Initialize the Library
 
