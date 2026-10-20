@@ -773,4 +773,29 @@ describe('OverpassClient', () => {
     };
     expect(typeCheck).toBeInstanceOf(Function);
   });
+
+  test('should wrap non-axios errors without retrying', async () => {
+    const cause = new Error('boom');
+    axiosMockAdapter.onPost('').reply(() => {
+      throw cause;
+    });
+
+    const error = await lastValueFrom(overpassClient.getElement('node', 1)).catch((err) => err);
+
+    expect(error).toBeInstanceOf(OverpassError);
+    expect(error.message).toContain('Unknown error occurred');
+    expect(error.cause).toBe(cause);
+    expect(axiosMockAdapter.history.post).toHaveLength(1);
+  });
+
+  test('should not retry cancelled requests', async () => {
+    axiosMockAdapter.onPost('').reply(() => Promise.reject(new axios.CanceledError()));
+
+    const error = await lastValueFrom(overpassClient.getElement('node', 1)).catch((err) => err);
+
+    expect(error).toBeInstanceOf(OverpassError);
+    expect(error.message).toContain('Request failed: canceled');
+    expect(axios.isCancel(error.cause)).toBe(true);
+    expect(axiosMockAdapter.history.post).toHaveLength(1);
+  });
 });
