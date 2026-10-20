@@ -18,7 +18,7 @@ All notable changes to this project are documented in this file. The format is b
 
 - `rxjs` is now a peer dependency (`^7.8.0`) instead of a dependency, so apps share their own RxJS instance. `@types/node` is no longer installed as a dependency.
 - `tags` is now optional on `OverpassNode`, `OverpassWay` and `OverpassRelation`, because Overpass omits it for untagged elements. `center` is now optional on ways and relations, because it's only present with `out center`.
-- `OverpassClient` is now generic over its format: `OverpassClient<'json'>` (the default) emits `OverpassResponse`, and `OverpassClient<'xml'>` emits `string`.
+- `OverpassClient` is now generic over its format: `OverpassClient<'json'>` (the default) emits `OverpassResponse`, and `OverpassClient<'xml'>` emits `string`. A client explicitly typed as `OverpassClient<'xml'>` must also be given `format: 'xml'`, because leaving it out requests JSON.
 - `maxRetries` now counts retries after the first attempt, as documented. Previously the last retry was never made, and `maxRetries: 0` emitted a raw `AxiosError` instead of an `OverpassError`.
 - Network failures with no response (connection resets, DNS failures, client-side timeouts) are now retried, instead of failing at once.
 - After a 429, the client now waits at least 30 seconds before retrying, as the [Overpass usage policy](https://wiki.openstreetmap.org/wiki/Overpass_API) asks. A longer `Retry-After` is honoured, but one over 5 minutes fails at once with an `OverpassError`.
@@ -53,6 +53,7 @@ All notable changes to this project are documented in this file. The format is b
   - Retryable failures (429, 5xx) that run out of retries: "Max retries exceeded. Request failed: [status] <status text>".
   - The "Unknown error occured" typo is fixed to "occurred".
   - All error messages now include the query.
+- Unsubscribing no longer cancels a request's pending retries. The request carries on until it completes or fails, so a later identical query shares it instead of sending a duplicate or skipping a 429 wait.
 - The ESM and CJS bundles no longer contain comments. The documentation ships in `index.d.ts`, so editors still show it.
 
 ## 1.x

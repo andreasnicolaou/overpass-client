@@ -15,7 +15,14 @@ import {
   RETRY_AFTER_MAX_MS,
 } from './constants';
 import { OverpassError } from './errors';
-import type { ElementType, OverpassClientOptions, OverpassFormat, OverpassLogger, OverpassResult } from './types';
+import type {
+  ElementType,
+  OverpassBaseOptions,
+  OverpassClientOptions,
+  OverpassFormat,
+  OverpassLogger,
+  OverpassResult,
+} from './types';
 import { escapeQL, hasRemark, parseRetryAfter } from './utils';
 
 /**
@@ -36,22 +43,35 @@ export class OverpassClient<F extends OverpassFormat = 'json'> {
 
   /**
    * Creates a new instance of the Overpass API client.
-   * @param options - Client options; see {@link OverpassClientOptions}. All are optional.
+   * @param options - Client options; see {@link OverpassClientOptions}. All are optional, except `format`
+   * when the client is explicitly typed with a non-JSON format, e.g. `new OverpassClient<'xml'>({ format: 'xml' })`.
    * @memberof OverpassClient
    */
-  constructor(options?: OverpassClientOptions<F>);
+  constructor(...args: 'json' extends F ? [options?: OverpassClientOptions<F>] : [options: OverpassClientOptions<F>]);
   /**
    * Creates a new instance of the Overpass API client from positional arguments.
-   * Each argument matches the {@link OverpassClientOptions} field of the same name.
+   * Each argument matches the {@link OverpassClientOptions} field of the same name, and `format`
+   * is required when the client is explicitly typed with a non-JSON format.
    * @memberof OverpassClient
    */
   constructor(
-    endpoint?: string,
-    format?: F,
-    timeout?: number,
-    maxRetries?: number,
-    lruCache?: LRUCache<string, OverpassResult<F>>,
-    userAgent?: string
+    ...args: 'json' extends F
+      ? [
+          endpoint?: string,
+          format?: F,
+          timeout?: number,
+          maxRetries?: number,
+          lruCache?: LRUCache<string, OverpassResult<F>>,
+          userAgent?: string,
+        ]
+      : [
+          endpoint: string | undefined,
+          format: F,
+          timeout?: number,
+          maxRetries?: number,
+          lruCache?: LRUCache<string, OverpassResult<F>>,
+          userAgent?: string,
+        ]
   );
   constructor(
     endpointOrOptions?: string | OverpassClientOptions<F>,
@@ -61,7 +81,7 @@ export class OverpassClient<F extends OverpassFormat = 'json'> {
     lruCache?: LRUCache<string, OverpassResult<F>>,
     userAgent?: string
   ) {
-    const options: OverpassClientOptions<F> =
+    const options: OverpassBaseOptions<F> & { format?: F } =
       typeof endpointOrOptions === 'object' && endpointOrOptions !== null
         ? endpointOrOptions
         : { endpoint: endpointOrOptions, format, timeout, maxRetries, lruCache, userAgent };
@@ -233,7 +253,9 @@ export class OverpassClient<F extends OverpassFormat = 'json'> {
             this.inFlight.delete(cacheKey);
           }
         }),
-        share()
+        // Stay connected when every subscriber leaves: the HTTP request can't be aborted anyway, and
+        // disconnecting would let the next subscriber send a duplicate request or skip a 429 wait.
+        share({ resetOnRefCountZero: false })
       );
       this.inFlight.set(cacheKey, shared$);
       return shared$;

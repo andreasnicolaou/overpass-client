@@ -2,7 +2,13 @@ import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { Observable, firstValueFrom, lastValueFrom } from 'rxjs';
 import { take, tap } from 'rxjs/operators';
-import { OverpassClient, OverpassError, type OverpassResponse } from './index';
+import {
+  OverpassClient,
+  OverpassError,
+  type OverpassClientOptions,
+  type OverpassFormat,
+  type OverpassResponse,
+} from './index';
 
 describe('OverpassClient', () => {
   let axiosMockAdapter!: MockAdapter;
@@ -653,6 +659,38 @@ describe('OverpassClient', () => {
     expect(axiosMockAdapter.history.post).toHaveLength(2); // node 1 once, node 2 once
   });
 
+  test('should keep sharing a request after every subscriber unsubscribes', async () => {
+    const mockData = { elements: [] };
+    let respond!: (reply: [number, unknown]) => void;
+    axiosMockAdapter.onPost('').reply(() => new Promise((resolve) => (respond = resolve)));
+
+    overpassClient.getElement('node', 1).subscribe().unsubscribe();
+    const resubscribed = lastValueFrom(overpassClient.getElement('node', 1));
+    await new Promise((resolve) => setTimeout(resolve, 0)); // let axios dispatch the request
+    respond([200, mockData]);
+
+    await expect(resubscribed).resolves.toEqual(mockData);
+    expect(axiosMockAdapter.history.post).toHaveLength(1);
+  });
+
+  test('should keep the 429 wait when subscribers unsubscribe during it', async () => {
+    jest.useFakeTimers();
+    const mockData = { elements: [] };
+    axiosMockAdapter.onPost('').replyOnce(429);
+    axiosMockAdapter.onPost('').reply(200, mockData);
+
+    const first = overpassClient.getElement('node', 1).subscribe();
+    await jest.advanceTimersByTimeAsync(1_000); // the 429 arrives and the 30 s wait starts
+    first.unsubscribe();
+    const resubscribed = lastValueFrom(overpassClient.getElement('node', 1));
+    await jest.advanceTimersByTimeAsync(28_000);
+    expect(axiosMockAdapter.history.post).toHaveLength(1);
+    await jest.advanceTimersByTimeAsync(1_000);
+
+    await expect(resubscribed).resolves.toEqual(mockData);
+    expect(axiosMockAdapter.history.post).toHaveLength(2);
+  });
+
   test('should share a failure between concurrent queries, then send a fresh request', async () => {
     axiosMockAdapter.onPost('').replyOnce(400);
     axiosMockAdapter.onPost('').reply(200, { elements: [] });
@@ -770,6 +808,33 @@ describe('OverpassClient', () => {
       // @ts-expect-error XML clients emit strings, not parsed responses
       const wrong: Observable<OverpassResponse> = new OverpassClient({ format: 'xml' }).getElement('node', 1);
       void [json, xml, wrong];
+    };
+    expect(typeCheck).toBeInstanceOf(Function);
+  });
+
+  test('should require a runtime format when the client is explicitly typed as XML', () => {
+    // Compile-time only: leaving `format` out means JSON at runtime, so these must not type as XML
+    const typeCheck = (): void => {
+      // @ts-expect-error format is required for an XML client
+      new OverpassClient<'xml'>();
+      // @ts-expect-error format is required for an XML client
+      new OverpassClient<'xml'>({});
+      // @ts-expect-error format is required for an XML client
+      new OverpassClient<'xml'>({ endpoint: 'http://test-overpass-api' });
+      // @ts-expect-error format is required for an XML client
+      new OverpassClient<'xml'>('http://test-overpass-api');
+      // @ts-expect-error format is required in XML options
+      const xmlOptions: OverpassClientOptions<'xml'> = {};
+
+      // Still allowed: the format is given, or the client can be JSON
+      const explicit: Observable<string> = new OverpassClient<'xml'>({ format: 'xml' }).getElement('node', 1);
+      const positional: Observable<string> = new OverpassClient<'xml'>(undefined, 'xml').getElement('node', 1);
+      const inferred: Observable<string> = new OverpassClient(undefined, 'xml').getElement('node', 1);
+      const json: Observable<OverpassResponse> = new OverpassClient<'json'>().getElement('node', 1);
+      const either = new OverpassClient<OverpassFormat>().getElement('node', 1);
+      const eitherResult: Observable<string | OverpassResponse> = either;
+      const jsonOptions: OverpassClientOptions = {};
+      void [xmlOptions, explicit, positional, inferred, json, eitherResult, jsonOptions];
     };
     expect(typeCheck).toBeInstanceOf(Function);
   });
