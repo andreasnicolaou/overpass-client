@@ -1,7 +1,7 @@
 import axios from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { Observable, firstValueFrom, lastValueFrom } from 'rxjs';
-import { take, tap } from 'rxjs/operators';
+import { retry, switchMap, take, tap } from 'rxjs/operators';
 import {
   OverpassClient,
   OverpassError,
@@ -671,6 +671,34 @@ describe('OverpassClient', () => {
 
     await expect(resubscribed).resolves.toEqual(mockData);
     expect(axiosMockAdapter.history.post).toHaveLength(1);
+  });
+
+  test('should send a fresh request when an uncached query is re-requested from its own result', async () => {
+    const mockData = { elements: [], remark: 'runtime error: Query timed out' }; // remarks are never cached
+    axiosMockAdapter.onPost('').reply(200, mockData);
+
+    const result = lastValueFrom(
+      overpassClient.getElement('node', 1).pipe(switchMap(() => overpassClient.getElement('node', 1)))
+    );
+
+    await expect(result).resolves.toEqual(mockData);
+    expect(axiosMockAdapter.history.post).toHaveLength(2);
+  });
+
+  test('should keep tracking a request restarted by an outer retry', async () => {
+    const pending: ((reply: [number, unknown]) => void)[] = [];
+    axiosMockAdapter.onPost('').replyOnce(400);
+    axiosMockAdapter.onPost('').reply(() => new Promise((resolve) => pending.push(resolve)));
+    const tick = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
+
+    const retried = lastValueFrom(overpassClient.getElement('node', 1).pipe(retry(1)));
+    await tick(); // the 400 fails, and the outer retry sends a second request
+    const concurrent = lastValueFrom(overpassClient.getElement('node', 1));
+    await tick();
+    pending.forEach((respond) => respond([200, { elements: [] }]));
+
+    await expect(Promise.all([retried, concurrent])).resolves.toEqual([{ elements: [] }, { elements: [] }]);
+    expect(axiosMockAdapter.history.post).toHaveLength(2); // the concurrent query joined the retried request
   });
 
   test('should keep the 429 wait when subscribers unsubscribe during it', async () => {

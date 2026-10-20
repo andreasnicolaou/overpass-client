@@ -23,6 +23,8 @@ jobs:
         run: npm ci
       - name: Run lint
         run: npm run lint
+      - name: Type-check source and tests
+        run: npm run typecheck
       - name: Check code formatting
         run: npm run format:check
       - name: Run tests and generate JUnit XML

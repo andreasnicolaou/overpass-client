@@ -33,6 +33,7 @@
     "format:check": "prettier --check .",
     "lint": "eslint --fix",
     "lint:check": "eslint",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "test:ci": "cross-env JEST_JUNIT_CLASSNAME=\"{filepath}\" jest --reporters=default --reporters=jest-junit",

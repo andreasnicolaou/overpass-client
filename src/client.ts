@@ -235,6 +235,14 @@ export class OverpassClient<F extends OverpassFormat = 'json'> {
       if (running$) {
         return running$;
       }
+      // Stops tracking this request. It runs before results and errors reach subscribers, so a query
+      // re-requested from a subscriber's callback (e.g. `switchMap` or an outer `retry`) starts afresh
+      // instead of joining this finished request or being left untracked when it is torn down.
+      const release = (): void => {
+        if (this.inFlight.get(cacheKey) === shared$) {
+          this.inFlight.delete(cacheKey);
+        }
+      };
       const shared$: Observable<OverpassResult<F>> = request$.pipe(
         retry({
           count: this.maxRetries,
@@ -242,17 +250,17 @@ export class OverpassClient<F extends OverpassFormat = 'json'> {
             this.isRetryable(error) ? this.retryDelay(error, attempt, query) : throwError(() => error),
         }),
         catchError((error) => throwError(() => this.toOverpassError(error, query))),
-        tap((data) => {
-          // Responses with a remark (e.g. a runtime timeout) may be partial, so they are not cached.
-          if (!hasRemark(data)) {
-            this.lruCache.set(cacheKey, data);
-          }
+        tap({
+          next: (data) => {
+            // Responses with a remark (e.g. a runtime timeout) may be partial, so they are not cached.
+            if (!hasRemark(data)) {
+              this.lruCache.set(cacheKey, data);
+            }
+            release();
+          },
+          error: release,
         }),
-        finalize(() => {
-          if (this.inFlight.get(cacheKey) === shared$) {
-            this.inFlight.delete(cacheKey);
-          }
-        }),
+        finalize(release),
         // Stay connected when every subscriber leaves: the HTTP request can't be aborted anyway, and
         // disconnecting would let the next subscriber send a duplicate request or skip a 429 wait.
         share({ resetOnRefCountZero: false })
