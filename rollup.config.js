@@ -11,7 +11,12 @@ const pkg = require('./package.json');
 const input = 'src/index.ts';
 
 /** Runtime deps stay external for the ESM/CJS builds so consumers dedupe them. */
-const external = [...Object.keys(pkg.dependencies ?? {}), /^rxjs\//, /^node:/];
+const external = [
+  ...Object.keys(pkg.dependencies ?? {}),
+  ...Object.keys(pkg.peerDependencies ?? {}),
+  /^rxjs\//,
+  /^node:/,
+];
 
 const banner = `/*! ${pkg.name} v${pkg.version} | ${pkg.license} License | ${pkg.repository.url} */`;
 
@@ -20,7 +25,7 @@ const banner = `/*! ${pkg.name} v${pkg.version} | ${pkg.license} License | ${pkg
  * config below rolls up into a single dist/index.d.ts. Bundling them means the published
  * types carry no relative imports, which would otherwise need explicit `.js` extensions
  * to satisfy consumers on moduleResolution node16/nodenext. So every rollup JS pass
- * compiles types-off.
+ * compiles types-off, and strips comments: the JSDoc ships in dist/index.d.ts instead.
  */
 const ts = () =>
   typescript({
@@ -30,6 +35,7 @@ const ts = () =>
       declarationDir: undefined,
       emitDeclarationOnly: false,
       outDir: undefined,
+      removeComments: true,
     },
   });
 

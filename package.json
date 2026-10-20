@@ -20,7 +20,8 @@
   "type": "module",
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build": "npm run clean && npm run build:types && npm run build:bundles && npm run clean:tmp",
@@ -85,6 +86,7 @@
     "@rollup/plugin-terser": "^1.0.0",
     "@rollup/plugin-typescript": "^12.3.0",
     "@types/jest": "^30.0.0",
+    "@types/node": "^26.6.5",
     "@typescript-eslint/eslint-plugin": "^8.71.1",
     "@typescript-eslint/parser": "^8.71.1",
     "axios-mock-adapter": "^2.1.0",
@@ -99,6 +101,7 @@
     "prettier": "3.9.10",
     "rollup": "^4.64.9",
     "rollup-plugin-dts": "^6.5.1",
+    "rxjs": "^7.8.2",
     "ts-jest": "^29.4.15",
     "ts-node": "^10.9.2",
     "tslib": "^2.8.1",
@@ -115,9 +118,10 @@
     "andreasnicolaou"
   ],
   "dependencies": {
-    "@types/node": "^26.6.5",
     "axios": "^1.20.0",
-    "lru-cache": "^11.5.3",
-    "rxjs": "^7.8.2"
+    "lru-cache": "^11.5.3"
+  },
+  "peerDependencies": {
+    "rxjs": "^7.8.0"
   }
 }

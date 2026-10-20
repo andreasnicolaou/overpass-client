@@ -96,6 +96,23 @@ This is exactly what the [live demo](https://andreasnicolaou.github.io/overpass-
 this.overpassClient = new OverpassClient();
 ```
 
+All options are optional:
+
+```typescript
+this.overpassClient = new OverpassClient({
+  endpoint: 'https://overpass-api.de/api/interpreter', // any public or private Overpass instance
+  format: 'json', // or 'xml', in which case queries emit the raw XML string
+  timeout: 60, // query timeout in seconds; 0 sends none
+  maxRetries: 3, // retries after the first attempt
+  userAgent: 'my-app/1.0 (contact@example.com)', // identifies your app, as the Overpass usage policy asks
+  logger: console, // receives retry notices; { warn: () => {} } silences them
+});
+```
+
+The positional form, `new OverpassClient(endpoint, format, timeout, maxRetries, lruCache, userAgent)`, still works.
+
+Failed requests are retried on rate limits (429), server errors (500, 502, 503, 504) and network failures. After a 429 the client waits at least 30 seconds, as the [Overpass usage policy](https://wiki.openstreetmap.org/wiki/Overpass_API) asks. Identical queries made while one is already running share a single request.
+
 ### Query a specific element by ID
 
 ```typescript
