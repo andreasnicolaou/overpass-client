@@ -1,6 +1,6 @@
 {
   "name": "@andreasnicolaou/overpass-client",
-  "version": "1.5.0",
+  "version": "2.0.0",
   "description": "A wrapper for the Overpass API to query OpenStreetMap data.",
   "main": "./dist/index.cjs",
   "private": false,
